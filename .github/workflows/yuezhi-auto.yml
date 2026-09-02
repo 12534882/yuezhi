@@ -1,8 +1,8 @@
-# 粤职通 · 云端自动采集+发布（GitHub Actions 免费定时）v2
+# 粤职通 · 云端自动采集+发布（GitHub Actions 免费定时）v3 —— 与本地国聘循环结合版
 # 每日 08:00 / 18:00 (北京时间=UTC 00:00/10:00)：
-#   全部源采集(含国聘-Playwright浏览器) → 治理 → 拆职位表 → 重建 → push
-# push 自动触发 Netlify 部署 → 永久网址实时更新
-# 本机守护可停，或仅作为浏览器源备份。job_db 由 git 单源同步，避免双写冲突：云端是唯一写者。
+#   1) 合并本机 push 的国聘 sidecar 进主库（本机每30分钟实时采的增量，云端汇总发布）
+#   2) 全部源采集(含国聘-Playwright浏览器) → 治理 → 拆职位表 → 重建 → push
+# 本机：仅国聘循环写 sidecar；云端：唯一写主库+dist 者。无冲突。
 name: yuezhi-auto
 
 on:
@@ -36,6 +36,9 @@ jobs:
 
       - name: Install chromium (for 国聘)
         run: npx playwright install --with-deps chromium 2>/dev/null || true
+
+      - name: Merge 本机国聘 sidecar 进主库
+        run: node engine/merge_sidecar.js || true
 
       - name: Run all collectors
         run: node collector/index.js || true
