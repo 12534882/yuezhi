@@ -97,6 +97,7 @@ a{color:inherit;text-decoration:none}
     <label>政治面貌<select id="political"><option value="共青团员" selected>共青团员</option><option value="中共党员">中共党员</option><option value="群众">群众</option></select></label>
     <label class="chk"><input type="checkbox" id="isFresh" checked> 应届毕业生</label>
     <label>偏好城市<div class="city-chips" id="cityChips"><span class="chip on" data-c="广州">广州</span><span class="chip on" data-c="深圳">深圳</span><span class="chip on" data-c="佛山">佛山</span><span class="chip on" data-c="东莞">东莞</span><span class="chip on" data-c="珠海">珠海</span></div></label>
+    <label class="chk"><input type="checkbox" id="strictOnly"> 只看严格对口（排除专业不限）</label>
     <button id="matchBtn" class="btn-primary big">🚀 匹配可报岗位</button>
     <div id="matchResult" class="match-result"></div>
   </aside>
@@ -388,12 +389,18 @@ a{color:inherit;text-decoration:none}
     var box=$('matchResult');box.innerHTML='⏳ 匹配中…';
     setTimeout(function(){
       var res=MATCH(cust,DB);
+      // 只看严格对口：排除专业要求为空的岗位（专业不限）
+      var strictOnly=$('strictOnly') && $('strictOnly').checked;
+      var filtered=res.matched;
+      if(strictOnly){
+        filtered=res.matched.filter(function(it){return it.a && String(it.a).trim();});
+      }
       // 进入精准匹配模式：主列表 = 全部匹配岗位（按分数降序）
-      matchList=res.matched.slice().sort(function(a,b){return (b.score||0)-(a.score||0);});
+      matchList=filtered.slice().sort(function(a,b){return (b.score||0)-(a.score||0);});
       matchMode=true; curPage=1;
       var groups={'强对口':[],'文博馆方向':[],'历史学大类':[],'相近大类':[]};
-      res.matched.forEach(function(it){var g=it.way==='专业精准对口'?'强对口':grade(it);(groups[g]=groups[g]||[]).push(it);});
-      var inner='<div class="s-head2">✅ 共匹配 <b>'+res.matched.length+'</b> 个可报岗位 '+hint+'</div>';
+      filtered.forEach(function(it){var g=it.way==='专业精准对口'?'强对口':grade(it);(groups[g]=groups[g]||[]).push(it);});
+      var inner='<div class="s-head2">✅ 共匹配 <b>'+filtered.length+'</b> 个可报岗位 '+hint+(strictOnly?'（严格对口）':'')+'</div>';
       ['强对口','文博馆方向','历史学大类','相近大类'].forEach(function(k){
         var list=groups[k]||[];if(!list.length)return;
         var lbl={'强对口':'🎯 强对口','文博馆方向':'🏺 文博馆','历史学大类':'📚 历史学大类','相近大类':'🔸 相近大类'}[k];
