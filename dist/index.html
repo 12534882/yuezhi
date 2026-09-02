@@ -96,6 +96,15 @@ a{color:inherit;text-decoration:none}
 .tl-desc{font-size:12px;color:#55626f;line-height:1.55}
 .tl-note{background:#fff8ec;border:1px dashed #f0c36d;border-radius:9px;padding:9px 12px;font-size:12px;color:#6b5a1e;line-height:1.6;margin-top:10px}
 .tl-note b{color:#1c3f5e}
+.profile-bar{display:flex;gap:5px;align-items:center;margin-bottom:6px}
+#profileSel{flex:1;padding:6px 8px;border:1px solid #d7dee6;border-radius:7px;font-size:12px}
+.btn-mini{padding:5px 9px;border:1px solid #1c5ea0;background:#fff;color:#1c5ea0;border-radius:6px;font-size:11px;cursor:pointer;white-space:nowrap}
+.btn-mini:hover{background:#eef4fb}
+.btn-mini.danger{border-color:#d9534f;color:#d9534f}
+.btn-mini.danger:hover{background:#fdf0ef}
+.qual-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:4px}
+.qual-chips .chip{padding:3px 9px;border:1px solid #d7dee6;border-radius:14px;font-size:11px;cursor:pointer;background:#fff;color:#55626f}
+.qual-chips .chip.on{background:#1c3f5e;color:#fff;border-color:#1c3f5e}
 @media (max-width:820px){.layout{grid-template-columns:1fr}.match-panel{order:-1}.j-duty{max-width:100%}}
 </style>
 </head>
@@ -116,7 +125,9 @@ a{color:inherit;text-decoration:none}
     <div id="pager" class="pager"></div>
   </section>
   <aside class="panel match-panel">
-    <h2>🎯 按我的条件匹配</h2><p class="hint">填画像，自动筛出你对口的可报岗位</p>
+    <h2>🎯 按我的条件匹配</h2><p class="hint">保存多套「脸谱」画像，一键切换快速匹配</p>
+    <div class="profile-bar"><select id="profileSel"><option value="">— 我的画像 —</option></select><button type="button" id="profileNew" class="btn-mini">➕ 新建</button><button type="button" id="profileSave" class="btn-mini">💾 保存</button><button type="button" id="profileDel" class="btn-mini danger">🗑️</button></div>
+    <input id="profileName" placeholder="画像名称（如：我的主画像 / 党员版）" style="width:100%;margin:6px 0 10px;padding:6px 9px;border:1px solid #d7dee6;border-radius:7px;font-size:12px">
     <label>学历<select id="degree"><option value="博士">博士</option><option value="硕士" selected>硕士</option><option value="本科">本科</option><option value="大专">大专</option></select></label>
     <label>毕业学校层级<select id="schoolTier"><option value="双一流/211/985">985/211/双一流</option><option value="双非一本">双非一本</option><option value="普通本科">普通本科</option><option value="大专/职校">大专/职校</option></select></label>
     <label>专业名称<input id="majorName" value="中国史（历史文献学）" placeholder="如 中国史 / 计算机" list="prof-list"><datalist id="prof-list"></datalist>
@@ -125,6 +136,7 @@ a{color:inherit;text-decoration:none}
     </label>
     <label>政治面貌<select id="political"><option value="共青团员" selected>共青团员</option><option value="中共党员">中共党员</option><option value="群众">群众</option></select></label>
     <label class="chk"><input type="checkbox" id="isFresh" checked> 应届毕业生</label>
+    <label>职业资格<div class="qual-chips" id="qualChips"><span class="chip" data-q="教师资格证">📜 教资</span><span class="chip" data-q="普通话二甲">🗣️ 普通话二甲</span><span class="chip" data-q="英语六级">🇬🇧 英语六级</span><span class="chip" data-q="计算机二级">💻 计算机二级</span><span class="chip" data-q="初级会计">💰 初级会计</span></div></label>
     <label>偏好城市<div class="city-chips" id="cityChips"><span class="chip on" data-c="广州">广州</span><span class="chip on" data-c="深圳">深圳</span><span class="chip on" data-c="佛山">佛山</span><span class="chip on" data-c="东莞">东莞</span><span class="chip on" data-c="珠海">珠海</span></div></label>
     <label class="chk"><input type="checkbox" id="strictOnly"> 只看严格对口（排除专业不限）</label>
     <button id="matchBtn" class="btn-primary big">🚀 匹配可报岗位</button>
@@ -270,6 +282,13 @@ a{color:inherit;text-decoration:none}
     else { schoolHint='学校未说明'; }
     if(schoolHint && schoolHint!=='学校未说明') reasons.push(schoolHint);
 
+    // 职业资格加分：有教资+教师类岗位 → +3；有相关证书+要求岗位 → +2
+    var qualBonus=0;
+    var quals=cust.quals||[];
+    var isTeacherCat = /teacher|教师|教育/.test(F(p,'cat',['src_cat'])||'') || /教师|教授/.test(F(p,'n',['position'])||'');
+    if(quals.indexOf('教师资格证')>-1 && isTeacherCat){ qualBonus=3; reasons.push('持有教师资格证(教师岗) +3'); }
+    else if(quals.length && isTeacherCat){ qualBonus=1; reasons.push('有职业资格(教师岗) +1'); }
+
     var majorW = 0.4, eduW = 0.18, polW = 0.15, candW = 0.12, cityW = 0.15, schoolW = 0.0;
     var majorScore = majorM.way === 'exact' ? 1 : (majorM.way === 'category' ? 0.8 : 0.3);
     var weightSum = 1.0 + schoolBonus / 100;
@@ -278,7 +297,7 @@ a{color:inherit;text-decoration:none}
     if (eduOver) score = Math.min(score, 70);
     // 专业不限：降到40分以下（排在精准匹配后，但保留可报）
     if (majorM.way === 'unknown') score = Math.min(score, 40);
-    score = Math.min(100, score + schoolBonus);
+    score = Math.min(100, score + schoolBonus + qualBonus);
 
     return { ok: true, score: score, reasons: reasons, fails: fails, city: city, majorWay: majorWayName };
   }
@@ -350,6 +369,55 @@ a{color:inherit;text-decoration:none}
   fCity.addEventListener('change',function(){curPage=1;if(matchMode)exitMatch();render();});
   $('fCat').addEventListener('change',function(){var v=$('fCat').value;document.querySelectorAll('.nav-link').forEach(function(x){x.classList.toggle('on',x.dataset.cat===v);});curPage=1;if(matchMode)exitMatch();render();});
   $('matchBtn').addEventListener('click',doMatch);
+  // ===== 多套画像（脸谱）管理 =====
+  var PROFILES_KEY='yzt_profiles_v1', ACTIVE_KEY='yzt_active_profile_v1';
+  function readProfiles(){ try{ return JSON.parse(localStorage.getItem(PROFILES_KEY)||'{}'); }catch(e){ return {}; } }
+  function writeProfiles(p){ try{ localStorage.setItem(PROFILES_KEY,JSON.stringify(p)); }catch(e){} }
+  function qualSel(){ return Array.prototype.map.call(document.querySelectorAll('#qualChips .chip.on'),function(c){return c.dataset.q;}); }
+  function collectProfile(){ return { degree:$('degree').value, schoolTier:$('schoolTier').value, majorName:$('majorName').value.trim(), political:$('political').value, isFresh:$('isFresh').checked, cities:selCities(), quals:qualSel(), strictOnly:!!($('strictOnly')&&$('strictOnly').checked) }; }
+  function applyProfile(p){
+    if(!p) return;
+    $('degree').value=p.degree||'硕士'; $('schoolTier').value=p.schoolTier||'双一流/211/985';
+    $('majorName').value=p.majorName||'';
+    $('political').value=p.political||'共青团员'; $('isFresh').checked=p.isFresh!==false;
+    document.querySelectorAll('#cityChips .chip').forEach(function(c){ c.classList.toggle('on', (p.cities||[]).indexOf(c.dataset.c)>-1); });
+    document.querySelectorAll('#qualChips .chip').forEach(function(c){ c.classList.toggle('on', (p.quals||[]).indexOf(c.dataset.q)>-1); });
+    if($('strictOnly')) $('strictOnly').checked=!!p.strictOnly;
+  }
+  function refreshProfileSel(){
+    var sel=$('profileSel'); var profs=readProfiles(); var cur=sel.value;
+    sel.innerHTML='<option value="">— 我的画像 —</option>';
+    Object.keys(profs).forEach(function(n){ var o=document.createElement('option'); o.value=n; o.textContent=n; sel.appendChild(o); });
+    if(cur && profs[cur]) sel.value=cur;
+    else sel.value=localStorage.getItem(ACTIVE_KEY)||'';
+  }
+  function saveProfile(){
+    var name=($('profileName').value||'').trim(); if(!name){ $('profileName').placeholder='请先输入画像名称'; return; }
+    var profs=readProfiles(); profs[name]=collectProfile(); writeProfiles(profs);
+    localStorage.setItem(ACTIVE_KEY,name); refreshProfileSel(); $('profileSel').value=name;
+    $('profileName').value='';
+    var hint=$('matchResult'); if(hint) hint.innerHTML='<div class="g-note">✅ 画像「'+name+'」已保存（共 '+Object.keys(profs).length+' 套）</div>';
+  }
+  function loadProfile(){
+    var name=$('profileSel').value; if(!name){ return; }
+    var profs=readProfiles(); var p=profs[name]; if(!p){ return; }
+    applyProfile(p); localStorage.setItem(ACTIVE_KEY,name);
+    var hint=$('matchResult'); if(hint) hint.innerHTML='<div class="g-note">📋 已切换到画像「'+name+'」，点击 🚀 匹配</div>';
+  }
+  function deleteProfile(){
+    var name=$('profileSel').value; if(!name) return;
+    var profs=readProfiles(); delete profs[name]; writeProfiles(profs);
+    refreshProfileSel(); $('profileName').value='';
+    var hint=$('matchResult'); if(hint) hint.innerHTML='<div class="g-note">🗑️ 已删除画像「'+name+'」</div>';
+  }
+  // 资格 chips 切换
+  document.querySelectorAll('#qualChips .chip').forEach(function(c){ if(!c.dataset.q) return; c.addEventListener('click',function(){ c.classList.toggle('on'); }); });
+  $('profileNew').addEventListener('click',function(){ $('profileName').value=''; $('profileName').focus(); $('profileSel').value=''; });
+  $('profileSave').addEventListener('click',saveProfile);
+  $('profileDel').addEventListener('click',deleteProfile);
+  $('profileSel').addEventListener('change',loadProfile);
+  // 启动时恢复上次激活画像
+  (function(){ refreshProfileSel(); var act=localStorage.getItem(ACTIVE_KEY); if(act){ var profs=readProfiles(); if(profs[act]) applyProfile(profs[act]); } })();
   function curCat(){var el=document.querySelector('.nav-link.on');return el?el.dataset.cat:($('fCat').value||'');}
   function selCities(){return Array.prototype.map.call(document.querySelectorAll('.chip.on'),function(c){return c.dataset.c;});}
   function search(){
@@ -489,7 +557,7 @@ a{color:inherit;text-decoration:none}
     }
     // 提示实际匹配的专业（模糊命中时）
     var hint=(matchedName!==majorInput)?('（已按「'+matchedName+'」匹配）'):'';
-    var cust={degree:$('degree').value,majorName:matchedName,majorCode:majorCode,schoolTier:$('schoolTier')?$('schoolTier').value:'',political:$('political').value,isFresh:$('isFresh').checked,cities:selCities(),province:'广东省'};
+    var cust={degree:$('degree').value,majorName:matchedName,majorCode:majorCode,schoolTier:$('schoolTier')?$('schoolTier').value:'',political:$('political').value,isFresh:$('isFresh').checked,cities:selCities(),province:'广东省',quals:qualSel()};
     var box=$('matchResult');box.innerHTML='⏳ 匹配中…';
     setTimeout(function(){
       var res=MATCH(cust,DB);
