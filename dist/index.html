@@ -1,4 +1,3 @@
-<!-- yuezhitong-deploy-1788332517846 -->
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -118,24 +117,62 @@ a{color:inherit;text-decoration:none}
     return 100;
   }
 
-  function matchesMajor(customerCodes, majorText) {
+  function matchesMajor(customerCodes, majorText, customerNames) {
     if (!majorText) return { hit: false, way: 'unknown' };
     var t = majorText.replace(/\s/g, '');
     if (customerCodes && customerCodes.length) {
+      // 0) 文本级精确匹配：岗位要求文本里直接含用户专业名（如 中国史/文物与博物馆学）→ 最优先
+      if (customerNames && customerNames.length) {
+        for (var ni = 0; ni < customerNames.length; ni++) {
+          var nm = String(customerNames[ni]).replace(/\s/g, '');
+          if (nm && nm.length >= 2 && t.indexOf(nm) > -1) {
+            return { hit: true, way: 'exact' };
+          }
+        }
+      }
+      // 1) 精确代码命中：用户码（6位具体专业 或 岗位要求里的完整代码）→ 精准
       for (var i = 0; i < customerCodes.length; i++) {
         var c = customerCodes[i].replace(/\s/g, '');
         if (t.indexOf(c) > -1 || t.indexOf(c.toUpperCase()) > -1) {
           return { hit: true, way: c.length >= 6 ? 'exact' : 'category' };
         }
       }
-      var prefixHit = customerCodes.some(function (code) {
-        var c = code.replace(/\s/g, '');
-        var pre = c.match(/^([A-Z]\d{2})/);
-        return pre && t.indexOf(pre[1]) > -1;
-      });
-      if (prefixHit) return { hit: true, way: 'category' };
+      // 2) 大类声明匹配：岗位要求明确写的是大类（如 "(A06)"、"历史学类"）→ 大类可报
+      var categoryCodes = customerCodes.filter(function (code) { return code.length === 3; });
+      for (var ci = 0; ci < categoryCodes.length; ci++) {
+        var cc = categoryCodes[ci];
+        var re = new RegExp('[（(]?' + cc + '[）),;、]');
+        if (re.test(t)) return { hit: true, way: 'category' };
+        if (/(类)/.test(majorText) && isCategoryText(majorText, cc, customerNames)) {
+          return { hit: true, way: 'category' };
+        }
+      }
     }
     return { hit: false, way: 'none' };
+  }
+
+  // 判断"要求文本含'类'"时，用户专业是否属于该类（用用户名称判断，而非模糊前缀）
+  function isCategoryText(majorText, categoryCode, customerNames) {
+    var catNames = {
+      'A06': ['历史', '中国史', '世界史', '考古', '文博', '博物馆', '文物', '文献'],
+      'A05': ['文学', '语言', '中文', '汉语言', '新闻', '传播', '英语', '外语'],
+      'A12': ['管理', '会计', '财务', '审计', '工商', '公共', '档案', '图书', '情报', '金融'],
+      'A08': ['工学', '工程', '计算机', '软件', '电子', '信息', '通信', '机械', '土木', '建筑', '水利', '电气', '材料', '环境', '交通'],
+      'A07': ['理学', '数学', '物理', '化学', '生物', '地理', '统计', '地质'],
+      'A10': ['医学', '临床', '中医', '护理', '药学', '口腔', '公共卫生'],
+      'A04': ['教育', '心理', '体育', '学前', '小学'],
+      'A09': ['农学', '林学', '农业', '水产', '兽医'],
+      'A03': ['法学', '政治', '社会', '思想'],
+      'A02': ['经济', '金融', '应用经济'],
+    };
+    var list = catNames[categoryCode] || [];
+    for (var i = 0; i < customerNames.length; i++) {
+      var n = String(customerNames[i]);
+      for (var j = 0; j < list.length; j++) {
+        if (n.indexOf(list[j]) > -1) return true;
+      }
+    }
+    return false;
   }
 
   function matchesPolitical(custPol, reqPol) {
@@ -163,7 +200,7 @@ a{color:inherit;text-decoration:none}
   function scoreItem(cust, p) {
     var reasons = [], fails = [];
     var majorTxt = F(p, 'a', ['major_pg', 'major_ug', 'major']);
-    var majorM = matchesMajor(cust.majorCode, majorTxt);
+    var majorM = matchesMajor(cust.majorCode, majorTxt, cust.majorName);
     var majorWayName = '';
     if (majorM.way === 'unknown') { majorWayName = '专业未注明(待确认)'; }
     else if (!majorM.hit) { fails.push('专业不符'); return { ok: false, score: 0, reasons: [], fails, majorWay: '' }; }
@@ -229,7 +266,7 @@ a{color:inherit;text-decoration:none}
 </script>
 <script>
 (function(){
-  var DB=window.__DB__; var ANN=window.__ANN__||[]; var PROFESSION={"中国史":["A0601","A06","A060106"],"历史":["A06"],"世界史":["A060105","A06"],"历史文献学":["A060104","A0601","A06"],"考古学":["A060102","A06"],"汉语言文学":["A0501","A05","A050103"],"中国语言文学":["A0501","A05"],"汉语国际教育":["A050103","A05"],"古典文献学":["A050104","A05"],"哲学":["A01","A010101"],"马克思主义理论":["A0305","A03"],"思想政治教育":["A0305","A03"],"社会学":["A0303","A03"],"新闻学":["A0503","A05","A050301"],"新闻传播学":["A0503","A05"],"英语":["A0502","A05"],"英语语言文学":["A0502","A05"],"外国语言文学":["A0502","A05"],"计算机科学与技术":["A0812","A08","A081201"],"计算机类":["A0812","A08"],"软件工程":["A0835","A08"],"网络工程":["A0809","A08"],"信息安全":["A0812","A08"],"电子信息":["A0809","A08"],"电子科学与技术":["A0809","A08"],"通信工程":["A0810","A08"],"信息与通信工程":["A0810","A08"],"人工智能":["A0809","A08"],"数据科学":["A0812","A08"],"数学":["A0701","A07"],"应用数学":["A0701","A07"],"统计学":["A0714","A07"],"物理":["A0702","A07"],"物理学":["A0702","A07"],"化学":["A0703","A07"],"生物":["A0710","A07"],"地理学":["A0705","A07"],"地质学":["A0709","A07"],"机械":["A0802","A08"],"机械工程":["A0802","A08"],"电气工程":["A0808","A08"],"电气":["A0808","A08"],"土木工程":["A0814","A08"],"建筑学":["A0813","A08"],"城乡规划":["A0833","A08"],"水利工程":["A0815","A08"],"测绘":["A0816","A08"],"材料":["A0805","A08"],"环境工程":["A0830","A08"],"食品科学与工程":["A0832","A08"],"交通运输":["A0823","A08"],"会计学":["A120201","A12"],"财务管理":["A1202","A12"],"审计":["A120201","A12"],"工商管理":["A1202","A12"],"企业管理":["A1202","A12"],"人力资源管理":["A1202","A12"],"市场营销":["A1202","A12"],"管理科学与工程":["A1201","A12"],"工程管理":["A1201","A12"],"行政管理":["A1204","A12"],"公共管理":["A1204","A12"],"图书馆学":["A1205","A12"],"档案学":["A1205","A12"],"情报学":["A1205","A12"],"金融":["A0202","A02"],"金融学":["A0202","A02"],"经济学":["A02"],"应用经济学":["A0202","A02"],"法学":["A0301","A03"],"法律":["A0301","A03"],"政治学":["A0302","A03"],"管理学":["A12"],"临床医学":["A1002","A10"],"内科学":["A1002","A10"],"外科学":["A1002","A10"],"儿科学":["A1002","A10"],"麻醉学":["A1002","A10"],"医学影像学":["A1002","A10"],"护理":["A1004","A10"],"护理学":["A1004","A10"],"中医学":["A1005","A10"],"中西医结合":["A1006","A10"],"药学":["A1007","A10"],"公共卫生":["A1004","A10"],"口腔医学":["A1003","A10"],"教育学":["A04","A0401"],"小学教育":["A0401","A04"],"学前教育":["A0401","A04"],"课程与教学论":["A0401","A04"],"学科教学":["A0401","A04"],"心理学":["A0402","A04"],"体育":["A0403","A04"],"体育学":["A0403","A04"],"美术学":["A1304","A13"],"音乐":["A1302","A13"],"设计学":["A1304","A13"],"艺术":["A13"],"农学":["A09"],"林学":["A0907","A09"],"水产":["A0908","A09"],"兽医":["A0906","A09"]}; var MATCH=window.YZTMatch.matchAll;
+  var DB=window.__DB__; var ANN=window.__ANN__||[]; var PROFESSION={"中国史":["A0601","A06","A060106"],"历史":["A06"],"历史学":["A06"],"世界史":["A060105","A06"],"历史文献学":["A060104","A0601","A06"],"考古学":["A060102","A06"],"考古学及博物馆学":["A060102","A06"],"文物与博物馆":["A060102","A06"],"文物与博物馆学":["A060102","A06"],"博物馆学":["A060102","A06"],"文物保护技术":["A060102","A06"],"历史地理学":["A060103","A06"],"专门史":["A060107","A06"],"中国古代史":["A060106","A06"],"中国近现代史":["A060106","A06"],"史学理论及史学史":["A060101","A06"],"历史文献":["A060104","A06"],"古籍整理":["A060104","A06"],"汉语言文学":["A0501","A05","A050103"],"中国语言文学":["A0501","A05"],"中国语言文学类":["A0501","A05"],"汉语国际教育":["A050103","A05"],"古典文献学":["A050104","A05"],"汉语言文字学":["A050103","A05"],"语言学及应用语言学":["A050102","A05"],"汉语言":["A0501","A05"],"国际中文教育":["A050103","A05"],"秘书学":["A0501","A05"],"应用语言学":["A050102","A05"],"新闻学":["A0503","A05","A050301"],"新闻传播学":["A0503","A05"],"新闻传播学类":["A0503","A05"],"传播学":["A0503","A05"],"广播电视":["A0503","A05"],"编辑出版学":["A0503","A05"],"英语":["A0502","A05"],"英语语言文学":["A0502","A05"],"外国语言文学":["A0502","A05"],"商务英语":["A0502","A05"],"日语":["A0502","A05"],"英语笔译":["A0502","A05"],"英语口译":["A0502","A05"],"哲学":["A01","A010101"],"马克思主义理论":["A0305","A03"],"思想政治教育":["A0305","A03"],"政治学":["A0302","A03"],"政治学类":["A0302","A03"],"社会学":["A0303","A03"],"计算机科学与技术":["A0812","A08","A081201"],"计算机类":["A0812","A08"],"计算机应用技术":["A0812","A08"],"软件工程":["A0835","A08"],"网络工程":["A0809","A08"],"信息安全":["A0812","A08"],"电子信息":["A0809","A08"],"电子科学与技术":["A0809","A08"],"通信工程":["A0810","A08"],"信息与通信工程":["A0810","A08"],"人工智能":["A0809","A08"],"数据科学":["A0812","A08"],"网络空间安全":["A0812","A08"],"大数据":["A0812","A08"],"数据科学与大数据技术":["A0812","A08"],"数学":["A0701","A07"],"应用数学":["A0701","A07"],"统计学":["A0714","A07"],"物理":["A0702","A07"],"物理学":["A0702","A07"],"化学":["A0703","A07"],"生物":["A0710","A07"],"生物学":["A0710","A07"],"地理学":["A0705","A07"],"地质学":["A0709","A07"],"理学":["A07"],"工学":["A08"],"文学":["A05"],"机械":["A0802","A08"],"机械工程":["A0802","A08"],"电气工程":["A0808","A08"],"电气":["A0808","A08"],"土木工程":["A0814","A08"],"建筑学":["A0813","A08"],"城乡规划":["A0833","A08"],"水利工程":["A0815","A08"],"水利水电工程":["A0815","A08"],"测绘":["A0816","A08"],"材料":["A0805","A08"],"环境工程":["A0830","A08"],"食品科学与工程":["A0832","A08"],"交通运输":["A0823","A08"],"工程造价":["A1201","A08"],"安全科学与工程":["A0837","A08"],"会计学":["A120201","A12"],"财务管理":["A1202","A12"],"审计":["A120201","A12"],"审计学":["A120201","A12"],"工商管理":["A1202","A12"],"企业管理":["A1202","A12"],"人力资源管理":["A1202","A12"],"市场营销":["A1202","A12"],"管理科学与工程":["A1201","A12"],"工程管理":["A1201","A12"],"行政管理":["A1204","A12"],"公共管理":["A1204","A12"],"图书馆学":["A1205","A12"],"档案学":["A1205","A12"],"情报学":["A1205","A12"],"管理学":["A12"],"金融":["A0202","A02"],"金融学":["A0202","A02"],"经济学":["A02"],"应用经济学":["A0202","A02"],"会计":["A120201","A12"],"法学":["A0301","A03"],"法律":["A0301","A03"],"法学类":["A0301","A03"],"临床医学":["A1002","A10"],"内科学":["A1002","A10"],"外科学":["A1002","A10"],"儿科学":["A1002","A10"],"麻醉学":["A1002","A10"],"医学影像学":["A1002","A10"],"影像医学与核医学":["A1002","A10"],"护理":["A1004","A10"],"护理学":["A1004","A10"],"中医学":["A1005","A10"],"中西医结合":["A1006","A10"],"药学":["A1007","A10"],"公共卫生":["A1004","A10"],"口腔医学":["A1003","A10"],"基础医学":["A1001","A10"],"医学":["A10"],"教育学":["A04","A0401"],"小学教育":["A0401","A04"],"学前教育":["A0401","A04"],"课程与教学论":["A0401","A04"],"学科教学":["A0401","A04"],"心理学":["A0402","A04"],"体育":["A0403","A04"],"体育学":["A0403","A04"],"美术学":["A1304","A13"],"音乐":["A1302","A13"],"设计学":["A1304","A13"],"艺术":["A13"],"农学":["A09"],"林学":["A0907","A09"],"水产":["A0908","A09"],"兽医":["A0906","A09"],"农业":["A09"]}; var MATCH=window.YZTMatch.matchAll;
   var $=function(id){return document.getElementById(id);};
   var curPage=1, PAGE_SIZE=15;
   var matchList=[], matchMode=false; // 精准匹配模式：主列表=匹配结果
@@ -324,7 +361,30 @@ a{color:inherit;text-decoration:none}
   function exitMatch(){ matchMode=false; matchList=[]; curPage=1; var box=$('matchResult'); if(box)box.innerHTML='<div class="s-head2">已退出匹配模式</div>'; render(); }
   function grade(it){var m=it.a||'';if(/A06(0?104)|古籍|文献学|敦煌|古文字/.test(m))return '强对口';if(/博物馆|纪念馆|考古|文物|文化遗产/.test((it.u||'')+m))return '文博馆方向';if(/历史学\(A06\)|历史学类|A06/.test(m))return '历史学大类';return '相近大类';}
   function doMatch(){
-    var cust={degree:$('degree').value,majorName:$('majorName').value.trim(),majorCode:PROFESSION[$('majorName').value.trim()]||['A06'],political:$('political').value,isFresh:$('isFresh').checked,cities:selCities(),province:'广东省'};
+    var majorInput=$('majorName').value.trim();
+    // 专业解析：精确命中词库 → 用其代码；未命中 → 模糊匹配最相近专业名 → 提示用户确认
+    var majorCode=PROFESSION[majorInput];
+    var matchedName=majorInput;
+    if(!majorCode){
+      var keys=Object.keys(PROFESSION);
+      var best='', bestScore=0;
+      for(var ki=0;ki<keys.length;ki++){
+        var k=keys[ki];
+        if(majorInput.length>=2){
+          if(k.indexOf(majorInput)>-1){ best=k; bestScore=99; break; }
+          if(majorInput.indexOf(k)>-1 && k.length>bestScore){ best=k; bestScore=k.length; }
+        }
+      }
+      if(best){ majorCode=PROFESSION[best]; matchedName=best; }
+      else { majorCode=null; matchedName=majorInput; }
+    }
+    if(!majorCode){
+      $('matchResult').innerHTML='<div class="g-note">❌ 未识别专业「'+majorInput+'」，请从下拉列表选择或输入更常见的专业名（如 中国史/汉语言文学/计算机）</div>';
+      return;
+    }
+    // 提示实际匹配的专业（模糊命中时）
+    var hint=(matchedName!==majorInput)?('（已按「'+matchedName+'」匹配）'):'';
+    var cust={degree:$('degree').value,majorName:matchedName,majorCode:majorCode,political:$('political').value,isFresh:$('isFresh').checked,cities:selCities(),province:'广东省'};
     var box=$('matchResult');box.innerHTML='⏳ 匹配中…';
     setTimeout(function(){
       var res=MATCH(cust,DB);
@@ -333,7 +393,7 @@ a{color:inherit;text-decoration:none}
       matchMode=true; curPage=1;
       var groups={'强对口':[],'文博馆方向':[],'历史学大类':[],'相近大类':[]};
       res.matched.forEach(function(it){var g=it.way==='专业精准对口'?'强对口':grade(it);(groups[g]=groups[g]||[]).push(it);});
-      var inner='<div class="s-head2">✅ 共匹配 <b>'+res.matched.length+'</b> 个可报岗位</div>';
+      var inner='<div class="s-head2">✅ 共匹配 <b>'+res.matched.length+'</b> 个可报岗位 '+hint+'</div>';
       ['强对口','文博馆方向','历史学大类','相近大类'].forEach(function(k){
         var list=groups[k]||[];if(!list.length)return;
         var lbl={'强对口':'🎯 强对口','文博馆方向':'🏺 文博馆','历史学大类':'📚 历史学大类','相近大类':'🔸 相近大类'}[k];
