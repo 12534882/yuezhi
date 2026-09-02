@@ -3,6 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>粤职通 · 公职岗位智能匹配平台</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -341,11 +344,11 @@ a{color:inherit;text-decoration:none}
   // 城市筛选
   var fCity=$('fCity'); CITIES.forEach(function(c){var o=document.createElement('option');o.value=c;o.textContent=c;fCity.appendChild(o);});
   document.querySelectorAll('.chip').forEach(function(c){c.classList.add('on');c.addEventListener('click',function(){c.classList.toggle('on');});});
-  document.querySelectorAll('.nav-link').forEach(function(a){a.addEventListener('click',function(e){e.preventDefault();document.querySelectorAll('.nav-link').forEach(function(x){x.classList.remove('on');});a.classList.add('on');curPage=1;if(matchMode)exitMatch();render();});});
+  document.querySelectorAll('.nav-link').forEach(function(a){a.addEventListener('click',function(e){e.preventDefault();document.querySelectorAll('.nav-link').forEach(function(x){x.classList.remove('on');});a.classList.add('on');$('fCat').value=a.dataset.cat||'';curPage=1;if(matchMode)exitMatch();render();});});
   $('searchBtn').addEventListener('click',function(){curPage=1;if(matchMode)exitMatch();render();});
   $('searchInput').addEventListener('keydown',function(e){if(e.key==='Enter'){curPage=1;if(matchMode)exitMatch();render();}});
   fCity.addEventListener('change',function(){curPage=1;if(matchMode)exitMatch();render();});
-  $('fCat').addEventListener('change',function(){curPage=1;if(matchMode)exitMatch();render();});
+  $('fCat').addEventListener('change',function(){var v=$('fCat').value;document.querySelectorAll('.nav-link').forEach(function(x){x.classList.toggle('on',x.dataset.cat===v);});curPage=1;if(matchMode)exitMatch();render();});
   $('matchBtn').addEventListener('click',doMatch);
   function curCat(){var el=document.querySelector('.nav-link.on');return el?el.dataset.cat:($('fCat').value||'');}
   function selCities(){return Array.prototype.map.call(document.querySelectorAll('.chip.on'),function(c){return c.dataset.c;});}
