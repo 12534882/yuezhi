@@ -78,13 +78,28 @@ a{color:inherit;text-decoration:none}
 .major-panel .m-chip{display:inline-block;padding:3px 9px;margin:2px 3px;border:1px solid #d7dee6;border-radius:14px;font-size:12px;cursor:pointer;color:#3a4755;background:#fff}
 .major-panel .m-chip:hover{border-color:#1c5ea0;color:#1c5ea0;background:#eef4fb}
 .major-panel .m-chip.sel{background:#1c3f5e;color:#fff;border-color:#1c3f5e}
+.tl-wrap{padding:4px 2px 10px}
+.tl-head{background:linear-gradient(135deg,#1c3f5e,#2b6fae);color:#fff;border-radius:12px;padding:16px 18px;margin-bottom:14px}
+.tl-head b{font-size:16px}.tl-sub{display:block;font-size:11px;opacity:.85;margin-top:4px}
+.tl-line{position:relative;padding-left:22px}
+.tl-line:before{content:'';position:absolute;left:7px;top:6px;bottom:6px;width:2px;background:linear-gradient(#2b6fae,#8fc3ee)}
+.tl-item{position:relative;margin-bottom:13px}
+.tl-item:before{content:'';position:absolute;left:-19px;top:7px;width:10px;height:10px;border-radius:50%;background:#2b6fae;border:2px solid #d7e7f7}
+.tl-time{font-size:11px;font-weight:700;color:#1c5ea0;margin-bottom:3px}
+.tl-card{background:#fff;border:1px solid #e2e9f1;border-left:3px solid #2b6fae;border-radius:9px;padding:10px 13px}
+.tl-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:5px}
+.tl-top b{font-size:13px;color:#1c2530}
+.tl-phase{font-size:10px;color:#fff;background:#ff9f43;border-radius:10px;padding:1px 8px}
+.tl-desc{font-size:12px;color:#55626f;line-height:1.55}
+.tl-note{background:#fff8ec;border:1px dashed #f0c36d;border-radius:9px;padding:9px 12px;font-size:12px;color:#6b5a1e;line-height:1.6;margin-top:10px}
+.tl-note b{color:#1c3f5e}
 @media (max-width:820px){.layout{grid-template-columns:1fr}.match-panel{order:-1}.j-duty{max-width:100%}}
 </style>
 </head>
 <body>
 <header class="header"><div class="header-inner">
   <div class="brand"><span class="logo">粤</span><div class="brand-text"><b>粤职通</b><span>公职岗位智能匹配</span></div></div>
-  <nav class="nav"><a href="#" class="nav-link on" data-cat="">全部</a><a href="#" class="nav-link" data-cat="sydw">事业编</a><a href="#" class="nav-link" data-cat="gwy">公务员</a><a href="#" class="nav-link" data-cat="soe">央国企</a><a href="#" class="nav-link" data-cat="teacher">教师</a></nav>
+  <nav class="nav"><a href="#" class="nav-link on" data-cat="">全部</a><a href="#" class="nav-link" data-cat="sydw">事业编</a><a href="#" class="nav-link" data-cat="gwy">公务员</a><a href="#" class="nav-link" data-cat="soe">央国企</a><a href="#" class="nav-link" data-cat="teacher">教师</a><a href="#" class="nav-link" data-cat="timeline">备考时间线</a></nav>
   <div class="stats">岗位库 <b id="statTotal">20004</b> 个</div>
 </div></header>
 <div class="search-bar">
@@ -353,11 +368,13 @@ a{color:inherit;text-decoration:none}
     var st=$('statTotal'); if(st) st.textContent=counts.all;
     document.querySelectorAll('.nav-link').forEach(function(a){
       var cat=a.dataset.cat||'all';
+      if(cat==='timeline') return;
       a.title=(a.textContent+' '+counts[cat]+'个');
     });
   })();
   function render(){
     if(matchMode){ renderMatch(); return; }
+    if(curCat()==='timeline'){ renderTimeline(); return; }
     var all=search(), total=all.length; $('totalCount').textContent=total;
     var pages=Math.max(1,Math.ceil(total/PAGE_SIZE)); if(curPage>pages)curPage=pages;
     var slice=all.slice((curPage-1)*PAGE_SIZE,curPage*PAGE_SIZE);
@@ -384,6 +401,31 @@ a{color:inherit;text-decoration:none}
     });
     $('pager').innerHTML='';
     if(pages>1){for(var i=1;i<=Math.min(pages,8);i++){var b=document.createElement('button');b.textContent=i;if(i===curPage)b.className='on';b.addEventListener('click',function(){curPage=i;render();});$('pager').appendChild(b);}}
+  }
+  // 备考时间线（2027届四线备考关键节点）
+  function renderTimeline(){
+    $('totalCount').textContent='—';
+    var list=$('jobList'); list.innerHTML='';
+    var html='<div class="tl-wrap">'+
+      '<div class="tl-head"><b>🎓 2027届 · 广东公职四线备考时间线</b><span class="tl-sub">（按往年规律推算，具体以当年公告为准）</span></div>'+
+      '<div class="tl-line">'+
+      tlItem('2026-06 ~ 2026-08','🌟 暑期准备期','确定 4 条主攻线目标；备齐 教师资格证（笔试）报名材料；开始刷行测基础（粉笔/华图）；整理党员/奖助学金/学生干部资历','D·历年规律','备战期')+
+      tlItem('2026-09 ~ 2026-10','🏛️ 央国企秋招（国企主攻线）','南网/中广核/铁投/广晟/南方传媒央企国企秋招网申+笔试；国聘网(iguopin)实时岗位每日刷新；同时关注 广东事业单位统考公告','A·官网原文','网申期')+
+      tlItem('2026-11 ~ 2026-12','📜 国考 + 广东选调（公务员升级线）','国考报名(11月)；广东省选调优秀大学毕业生 报名(12月初，限制高校)；选调职位表按 A06 历史学类 查询对口职位','D·历年规律','报名笔试期')+
+      tlItem('2027-01 ~ 2027-02','✍️ 广东省考 报名（公务员主力）','广东省考公告(1月)发布 → 职位表(附件1) → 按专业代码筛选可报职位；同步 教师资格证笔试(3月)备考','D·历年规律','报名期')+
+      tlItem('2027-03 ~ 2027-04','🏛️ 广东省考笔试 + 教师编制','省考笔试(3月)；各地教师招聘(广州/深圳/佛山公办编制) 报名；省考成绩(4月)','D·历年规律','考试期')+
+      tlItem('2027-04 ~ 2027-05','🏺 广东事业单位统考（事业编线）','广东事业单位集中招聘 公告(4月) → 职位表5表(含中央驻粤/专项)→ 5维匹配报名；文博线：博物馆/纪念馆/档案馆岗位集中在此','D·历年规律','报名期')+
+      tlItem('2027-06 ~ 2027-07','✅ 事业编统考笔试 + 面试','事业编统考笔试(5-6月)；省考面试(6月)；央国企补招；教师资格证面试(5月)','D·历年规律','面试期')+
+      tlItem('2027-08 ~ 2027-09','🎯 应届上岸冲刺','事业单位面试/体检/政审；2027秋招提前批（银行/国企）；选调/省考补录','D·历年规律','上岸期')+
+      '</div>'+
+      '<div class="tl-note">💡 四线并行策略：<b>国企主攻</b>(南网/国聘/铁路) ｜ <b>教师保底</b>(教资+公办编制) ｜ <b>公务员升级</b>(国考/省考/选调) ｜ <b>文博保险</b>(博物馆/纪念馆/档案馆，历史考古对口)。多线并行互不冲突，任一线上岸即保底。</div>'+
+      '<div class="tl-note">⏰ 每日自动更新：本库 2 万+ 广东公职岗位（公务员/事业编/央国企/教师）每 30 分钟增量采集，报名窗口实时刷新。</div>'+
+      '</div>';
+    list.innerHTML=html;
+    $('pager').innerHTML='';
+  }
+  function tlItem(ts,t,desc,lv,phase){
+    return '<div class="tl-item"><div class="tl-time">'+ts+'</div><div class="tl-card"><div class="tl-top"><b>'+t+'</b><span class="tl-phase">'+phase+'</span><span class="lv lv-'+(lv.charAt(0).toLowerCase())+'">'+lv+'</span></div><div class="tl-desc">'+desc+'</div></div></div>';
   }
   // 精准匹配模式：主列表=全部匹配岗位，带分数徽章
   function renderMatch(){
