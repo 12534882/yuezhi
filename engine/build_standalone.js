@@ -45,6 +45,11 @@ console.log('岗位: ' + slim.length + ' 条, ' + Math.round(dbJson.length / 102
 
 const PROFESSION = require('../config/profession');
 
+// 构建时间戳（展示数据新鲜度）
+const _now = new Date();
+const _pad = (n) => String(n).padStart(2, '0');
+const BUILD_TIME = _now.getFullYear() + '-' + _pad(_now.getMonth() + 1) + '-' + _pad(_now.getDate()) + ' ' + _pad(_now.getHours()) + ':' + _pad(_now.getMinutes());
+
 const html = `<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -62,7 +67,7 @@ a{color:inherit;text-decoration:none}
 .brand{display:flex;align-items:center;gap:10px}.logo{width:38px;height:38px;background:linear-gradient(135deg,#ffb35c,#ff935c);border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:19px;color:#fff;box-shadow:0 3px 10px rgba(255,147,92,.35)}
 .brand-text b{font-size:18px;display:block;line-height:1.2;color:#2c2a27}.brand-text span{font-size:11px;color:#9a9288}
 .nav{display:flex;gap:4px;flex-wrap:wrap}.nav-link{padding:7px 13px;border-radius:20px;font-size:13px;color:#6b6359;cursor:pointer;transition:all .2s}.nav-link:hover{background:#fff;box-shadow:0 2px 8px rgba(120,100,70,.12)}.nav-link.on{background:linear-gradient(135deg,#ffb35c,#ff935c);color:#fff;font-weight:700;box-shadow:0 3px 10px rgba(255,147,92,.35)}
-.stats{font-size:12px;color:#9a9288;text-align:right}
+.stats{font-size:12px;color:#9a9288;text-align:right}.fresh-badge{display:inline-block;margin-left:8px;padding:2px 9px;background:#eef7ee;color:#3d8b4f;border-radius:10px;font-size:11px;font-weight:600;white-space:nowrap}
 .search-bar{background:rgba(255,255,255,.85);backdrop-filter:blur(6px);border-bottom:1px solid #f3e8d8;position:sticky;top:0;z-index:50}
 .search-inner{max-width:1280px;margin:0 auto;padding:14px 18px 4px;display:flex;gap:9px}
 #searchInput{flex:1;padding:12px 16px;border:1.5px solid #f0e4d2;border-radius:14px;font-size:14px;background:#fffdf9;box-shadow:inset 0 1px 3px rgba(120,90,40,.06)}#searchInput:focus{outline:none;border-color:#ffb35c;box-shadow:0 0 0 3px rgba(255,179,92,.18)}
@@ -189,7 +194,7 @@ a{color:inherit;text-decoration:none}
 <header class="header"><div class="header-inner">
   <div class="brand"><span class="logo">粤</span><div class="brand-text"><b>粤职通</b><span>公职岗位智能匹配</span></div></div>
   <nav class="nav"><a href="#" class="nav-link on" data-cat="">全部</a><a href="#" class="nav-link" data-cat="sydw">事业编</a><a href="#" class="nav-link" data-cat="gwy">公务员</a><a href="#" class="nav-link" data-cat="soe">央国企</a><a href="#" class="nav-link" data-cat="teacher">教师</a><a href="#" class="nav-link" data-cat="timeline">备考时间线</a></nav>
-  <div class="stats">岗位库 <b id="statTotal">${slim.length}</b> 个</div>
+  <div class="stats">岗位库 <b id="statTotal">${slim.length}</b> 个 <span class="fresh-badge" title="数据最后更新时间（每天 08:00 / 18:00 自动采集更新）">🕒 ${BUILD_TIME}</span></div>
 </div></header>
 <div class="search-bar">
   <div class="search-inner"><input id="searchInput" type="text" placeholder="搜索岗位 / 单位 / 专业，如「博物馆」「电网」…"><button id="searchBtn" class="btn-primary">🔍 搜索</button></div>
