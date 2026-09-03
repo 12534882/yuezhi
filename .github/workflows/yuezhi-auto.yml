@@ -1,8 +1,9 @@
-# 粤职通 · 云端自动采集+发布（GitHub Actions 免费定时）v3 —— 与本地国聘循环结合版
+# 粤职通 · 云端自动采集+发布 v4 —— GitHub Pages 通道（Netlify 额度耗尽后迁移）
 # 每日 08:00 / 18:00 (北京时间=UTC 00:00/10:00)：
-#   1) 合并本机 push 的国聘 sidecar 进主库（本机每30分钟实时采的增量，云端汇总发布）
-#   2) 全部源采集(含国聘-Playwright浏览器) → 治理 → 拆职位表 → 重建 → push
-# 本机：仅国聘循环写 sidecar；云端：唯一写主库+dist 者。无冲突。
+#   1) 合并本机 push 的国聘 sidecar 进主库
+#   2) 全部源采集(含国聘-Playwright浏览器) → 治理 → 拆职位表 → 重建
+#   3) publish_pages：更新 gh-pages 分支 → GitHub Pages 自动发布（免费无限）
+# 注意：不再 push main 触发 Netlify（Netlify 免费构建额度已耗尽）
 name: yuezhi-auto
 
 on:
@@ -49,12 +50,24 @@ jobs:
       - name: Build standalone
         run: node engine/build_standalone.js
 
-      - name: Commit and push
+      - name: Update main branch (job_db+dist 备份)
         run: |
           git config user.name "yuezhi-bot"
           git config user.email "yuezhi-bot@users.noreply.github.com"
-          git add dist data/job_db.json
+          git add data/job_db.json dist/index.html
           git diff --cached --quiet || git commit -m "yuezhi auto: $(date '+%Y-%m-%d %H:%M')"
-          git push origin HEAD:main
+          git push origin HEAD:main || true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Deploy to GitHub Pages
+        run: |
+          git fetch origin gh-pages
+          git checkout -f gh-pages
+          cp dist/index.html index.html
+          git add index.html
+          git diff --cached --quiet || git commit -m "deploy pages: $(date '+%Y-%m-%d %H:%M')"
+          git push origin gh-pages
+          git checkout -f main || git checkout -f master || true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
