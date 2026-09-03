@@ -142,7 +142,7 @@ a{color:inherit;text-decoration:none}
 <header class="header"><div class="header-inner">
   <div class="brand"><span class="logo">粤</span><div class="brand-text"><b>粤职通</b><span>公职岗位智能匹配</span></div></div>
   <nav class="nav"><a href="#" class="nav-link on" data-cat="">全部</a><a href="#" class="nav-link" data-cat="sydw">事业编</a><a href="#" class="nav-link" data-cat="gwy">公务员</a><a href="#" class="nav-link" data-cat="soe">央国企</a><a href="#" class="nav-link" data-cat="teacher">教师</a><a href="#" class="nav-link" data-cat="timeline">备考时间线</a></nav>
-  <div class="stats">岗位库 <b id="statTotal">20143</b> 个 <span class="fresh-badge" title="数据最后更新时间（每天 08:00 / 18:00 自动采集更新）">🕒 2026-09-03 23:42</span></div>
+  <div class="stats">岗位库 <b id="statTotal">20143</b> 个 <span class="fresh-badge" title="数据最后更新时间（每天 08:00 / 18:00 自动采集更新）">🕒 2026-09-03 23:45</span></div>
 </div></header>
 <div class="search-bar">
   <div class="search-inner"><input id="searchInput" type="text" placeholder="搜索岗位 / 单位 / 专业，如「博物馆」「电网」…"><button id="searchBtn" class="btn-primary">🔍 搜索</button></div>
@@ -362,7 +362,7 @@ a{color:inherit;text-decoration:none}
   var DB=window.__DB__; var ANN=window.__ANN__||[]; var PROFESSION={"中国史":["A0601","A06","A060106"],"历史":["A06"],"历史学":["A06"],"世界史":["A060105","A06"],"历史文献学":["A060104","A0601","A06"],"考古学":["A060102","A06"],"考古学及博物馆学":["A060102","A06"],"文物与博物馆":["A060102","A06"],"文物与博物馆学":["A060102","A06"],"博物馆学":["A060102","A06"],"文物保护技术":["A060102","A06"],"历史地理学":["A060103","A06"],"专门史":["A060107","A06"],"中国古代史":["A060106","A06"],"中国近现代史":["A060106","A06"],"史学理论及史学史":["A060101","A06"],"历史文献":["A060104","A06"],"古籍整理":["A060104","A06"],"汉语言文学":["A0501","A05","A050103"],"中国语言文学":["A0501","A05"],"中国语言文学类":["A0501","A05"],"汉语国际教育":["A050103","A05"],"古典文献学":["A050104","A05"],"汉语言文字学":["A050103","A05"],"语言学及应用语言学":["A050102","A05"],"汉语言":["A0501","A05"],"国际中文教育":["A050103","A05"],"秘书学":["A0501","A05"],"应用语言学":["A050102","A05"],"新闻学":["A0503","A05","A050301"],"新闻传播学":["A0503","A05"],"新闻传播学类":["A0503","A05"],"传播学":["A0503","A05"],"广播电视":["A0503","A05"],"编辑出版学":["A0503","A05"],"英语":["A0502","A05"],"英语语言文学":["A0502","A05"],"外国语言文学":["A0502","A05"],"商务英语":["A0502","A05"],"日语":["A0502","A05"],"英语笔译":["A0502","A05"],"英语口译":["A0502","A05"],"哲学":["A01","A010101"],"马克思主义理论":["A0305","A03"],"思想政治教育":["A0305","A03"],"政治学":["A0302","A03"],"政治学类":["A0302","A03"],"社会学":["A0303","A03"],"计算机科学与技术":["A0812","A08","A081201"],"计算机类":["A0812","A08"],"计算机应用技术":["A0812","A08"],"软件工程":["A0835","A08"],"网络工程":["A0809","A08"],"信息安全":["A0812","A08"],"电子信息":["A0809","A08"],"电子科学与技术":["A0809","A08"],"通信工程":["A0810","A08"],"信息与通信工程":["A0810","A08"],"人工智能":["A0809","A08"],"数据科学":["A0812","A08"],"网络空间安全":["A0812","A08"],"大数据":["A0812","A08"],"数据科学与大数据技术":["A0812","A08"],"数学":["A0701","A07"],"应用数学":["A0701","A07"],"统计学":["A0714","A07"],"物理":["A0702","A07"],"物理学":["A0702","A07"],"化学":["A0703","A07"],"生物":["A0710","A07"],"生物学":["A0710","A07"],"地理学":["A0705","A07"],"地质学":["A0709","A07"],"理学":["A07"],"工学":["A08"],"文学":["A05"],"机械":["A0802","A08"],"机械工程":["A0802","A08"],"电气工程":["A0808","A08"],"电气":["A0808","A08"],"土木工程":["A0814","A08"],"建筑学":["A0813","A08"],"城乡规划":["A0833","A08"],"水利工程":["A0815","A08"],"水利水电工程":["A0815","A08"],"测绘":["A0816","A08"],"材料":["A0805","A08"],"环境工程":["A0830","A08"],"食品科学与工程":["A0832","A08"],"交通运输":["A0823","A08"],"工程造价":["A1201","A08"],"安全科学与工程":["A0837","A08"],"会计学":["A120201","A12"],"财务管理":["A1202","A12"],"审计":["A120201","A12"],"审计学":["A120201","A12"],"工商管理":["A1202","A12"],"企业管理":["A1202","A12"],"人力资源管理":["A1202","A12"],"市场营销":["A1202","A12"],"管理科学与工程":["A1201","A12"],"工程管理":["A1201","A12"],"行政管理":["A1204","A12"],"公共管理":["A1204","A12"],"图书馆学":["A1205","A12"],"档案学":["A1205","A12"],"情报学":["A1205","A12"],"管理学":["A12"],"金融":["A0202","A02"],"金融学":["A0202","A02"],"经济学":["A02"],"应用经济学":["A0202","A02"],"会计":["A120201","A12"],"法学":["A0301","A03"],"法律":["A0301","A03"],"法学类":["A0301","A03"],"临床医学":["A1002","A10"],"内科学":["A1002","A10"],"外科学":["A1002","A10"],"儿科学":["A1002","A10"],"麻醉学":["A1002","A10"],"医学影像学":["A1002","A10"],"影像医学与核医学":["A1002","A10"],"护理":["A1004","A10"],"护理学":["A1004","A10"],"中医学":["A1005","A10"],"中西医结合":["A1006","A10"],"药学":["A1007","A10"],"公共卫生":["A1004","A10"],"口腔医学":["A1003","A10"],"基础医学":["A1001","A10"],"医学":["A10"],"教育学":["A04","A0401"],"小学教育":["A0401","A04"],"学前教育":["A0401","A04"],"课程与教学论":["A0401","A04"],"学科教学":["A0401","A04"],"心理学":["A0402","A04"],"体育":["A0403","A04"],"体育学":["A0403","A04"],"美术学":["A1304","A13"],"音乐":["A1302","A13"],"设计学":["A1304","A13"],"艺术":["A13"],"农学":["A09"],"林学":["A0907","A09"],"水产":["A0908","A09"],"兽医":["A0906","A09"],"农业":["A09"]}; var MATCH=window.YZTMatch.matchAll;
   var $=function(id){return document.getElementById(id);};
   var curPage=1, PAGE_SIZE=15;
-  var matchList=[], matchMode=false; // 精准匹配模式：主列表=匹配结果
+  var matchList=[], matchMode=false, matchCat=''; // 精准匹配模式：主列表=匹配结果; matchCat=匹配内分类过滤(''=全部)
   var CITIES=['广州','深圳','珠海','佛山','东莞','中山','惠州','肇庆','韶关','湛江','茂名','江门'];
   // 专业
   var dl=$('prof-list'); Object.keys(PROFESSION).forEach(function(p){var o=document.createElement('option');o.value=p;dl.appendChild(o);});
@@ -397,11 +397,22 @@ a{color:inherit;text-decoration:none}
   // 城市筛选
   var fCity=$('fCity'); CITIES.forEach(function(c){var o=document.createElement('option');o.value=c;o.textContent=c;fCity.appendChild(o);});
   document.querySelectorAll('.chip').forEach(function(c){c.classList.add('on');c.addEventListener('click',function(){c.classList.toggle('on');});});
-  document.querySelectorAll('.nav-link').forEach(function(a){a.addEventListener('click',function(e){e.preventDefault();document.querySelectorAll('.nav-link').forEach(function(x){x.classList.remove('on');});a.classList.add('on');$('fCat').value=a.dataset.cat||'';curPage=1;if(matchMode)exitMatch();render();});});
+  function applyCatSel(v){
+    var navVal=v===''?'':v; // 导航空=全部
+    $('fCat').value=v||'';
+    document.querySelectorAll('.nav-link').forEach(function(x){x.classList.toggle('on',(x.dataset.cat||'')===navVal);});
+    curPage=1;
+    if(matchMode){
+      if(v===''){ exitMatch(); return; }   // 点「全部」→ 退出匹配模式
+      matchCat=v; renderMatch(); return;    // 匹配模式下点分类 → 匹配结果内过滤
+    }
+    render();
+  }
+  document.querySelectorAll('.nav-link').forEach(function(a){a.addEventListener('click',function(e){e.preventDefault();applyCatSel(a.dataset.cat||'');});});
   $('searchBtn').addEventListener('click',function(){curPage=1;if(matchMode)exitMatch();render();});
   $('searchInput').addEventListener('keydown',function(e){if(e.key==='Enter'){curPage=1;if(matchMode)exitMatch();render();}});
   fCity.addEventListener('change',function(){curPage=1;if(matchMode)exitMatch();render();});
-  $('fCat').addEventListener('change',function(){var v=$('fCat').value;document.querySelectorAll('.nav-link').forEach(function(x){x.classList.toggle('on',x.dataset.cat===v);});curPage=1;if(matchMode)exitMatch();render();});
+  $('fCat').addEventListener('change',function(){applyCatSel($('fCat').value);});
   $('matchBtn').addEventListener('click',doMatch);
   // ===== 多套画像（脸谱）管理 =====
   var PROFILES_KEY='yzt_profiles_v1', ACTIVE_KEY='yzt_active_profile_v1';
@@ -581,13 +592,15 @@ a{color:inherit;text-decoration:none}
   }
   // 精准匹配模式：主列表=全部匹配岗位，带分数徽章
   function renderMatch(){
-    var total=matchList.length; $('totalCount').textContent=total;
+    var list2 = matchList;
+    if(matchCat){ list2 = matchList.filter(function(x){return x.cat===matchCat;}); }
+    var total=list2.length; $('totalCount').textContent=total;
     var pages=Math.max(1,Math.ceil(total/PAGE_SIZE)); if(curPage>pages)curPage=pages;
-    var slice=matchList.slice((curPage-1)*PAGE_SIZE,curPage*PAGE_SIZE);
+    var slice=list2.slice((curPage-1)*PAGE_SIZE,curPage*PAGE_SIZE);
     var list=$('jobList'); list.innerHTML='';
     var banner=document.createElement('div');
     banner.className='match-banner';
-    banner.innerHTML='🎯 <b>精准匹配模式</b>：为你量身筛选的 '+total+' 个可报岗位<button class="btn-exit" id="btnExitMatch2">✕ 返回全部岗位</button>';
+    banner.innerHTML='🎯 <b>精准匹配模式</b>：'+(matchCat?('「'+catLabel[matchCat]+'」内 '):'')+'为你量身筛选的 '+total+' 个可报岗位<button class="btn-exit" id="btnExitMatch2">✕ 退出匹配</button>';
     list.appendChild(banner);
     slice.forEach(function(p){
       var div=document.createElement('div');div.className='job cat-'+(p&&p.cat||'x');
@@ -617,7 +630,7 @@ a{color:inherit;text-decoration:none}
       if(curPage<totalPg){var bN=document.createElement('button');bN.textContent='›';bN.addEventListener('click',function(){curPage++;renderMatch();});$('pager').appendChild(bN);}
     }
   }
-  function exitMatch(){ matchMode=false; matchList=[]; curPage=1; var box=$('matchResult'); if(box)box.innerHTML='<div class="s-head2">已退出匹配模式</div>'; render(); }
+  function exitMatch(){ matchMode=false; matchList=[]; matchCat=''; curPage=1; var box=$('matchResult'); if(box)box.innerHTML=''; render(); }
   function grade(it){var m=it.a||'';if(/A06(0?104)|古籍|文献学|敦煌|古文字/.test(m))return '强对口';if(/博物馆|纪念馆|考古|文物|文化遗产/.test((it.u||'')+m))return '文博馆方向';if(/历史学\(A06\)|历史学类|A06/.test(m))return '历史学大类';return '相近大类';}
   function doMatch(){
     var majorInput=$('majorName').value.trim();
@@ -655,7 +668,7 @@ a{color:inherit;text-decoration:none}
       }
       // 进入精准匹配模式：主列表 = 全部匹配岗位（按分数降序）
       matchList=filtered.slice().sort(function(a,b){return (b.score||0)-(a.score||0);});
-      matchMode=true; curPage=1;
+      matchMode=true; matchCat=''; curPage=1;
       var groups={'强对口':[],'文博馆方向':[],'历史学大类':[],'相近大类':[]};
       filtered.forEach(function(it){var g=it.way==='专业精准对口'?'强对口':grade(it);(groups[g]=groups[g]||[]).push(it);});
       var inner='<div class="s-head2">✅ 共匹配 <b>'+filtered.length+'</b> 个可报岗位 '+hint+(strictOnly?'（严格对口）':'')+'</div>';
