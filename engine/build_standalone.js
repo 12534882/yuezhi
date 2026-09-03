@@ -237,7 +237,7 @@ a{color:inherit;text-decoration:none}
   var DB=window.__DB__; var ANN=window.__ANN__||[]; var PROFESSION=${JSON.stringify(PROFESSION)}; var MATCH=window.YZTMatch.matchAll;
   var $=function(id){return document.getElementById(id);};
   var curPage=1, PAGE_SIZE=15;
-  var matchList=[], matchMode=false; // 精准匹配模式：主列表=匹配结果
+  var matchList=[], matchMode=false, matchCat=''; // 精准匹配模式：主列表=匹配结果; matchCat=匹配内分类过滤(''=全部)
   var CITIES=['广州','深圳','珠海','佛山','东莞','中山','惠州','肇庆','韶关','湛江','茂名','江门'];
   // 专业
   var dl=$('prof-list'); Object.keys(PROFESSION).forEach(function(p){var o=document.createElement('option');o.value=p;dl.appendChild(o);});
@@ -272,11 +272,22 @@ a{color:inherit;text-decoration:none}
   // 城市筛选
   var fCity=$('fCity'); CITIES.forEach(function(c){var o=document.createElement('option');o.value=c;o.textContent=c;fCity.appendChild(o);});
   document.querySelectorAll('.chip').forEach(function(c){c.classList.add('on');c.addEventListener('click',function(){c.classList.toggle('on');});});
-  document.querySelectorAll('.nav-link').forEach(function(a){a.addEventListener('click',function(e){e.preventDefault();document.querySelectorAll('.nav-link').forEach(function(x){x.classList.remove('on');});a.classList.add('on');$('fCat').value=a.dataset.cat||'';curPage=1;if(matchMode)exitMatch();render();});});
+  function applyCatSel(v){
+    var navVal=v===''?'':v; // 导航空=全部
+    $('fCat').value=v||'';
+    document.querySelectorAll('.nav-link').forEach(function(x){x.classList.toggle('on',(x.dataset.cat||'')===navVal);});
+    curPage=1;
+    if(matchMode){
+      if(v===''){ exitMatch(); return; }   // 点「全部」→ 退出匹配模式
+      matchCat=v; renderMatch(); return;    // 匹配模式下点分类 → 匹配结果内过滤
+    }
+    render();
+  }
+  document.querySelectorAll('.nav-link').forEach(function(a){a.addEventListener('click',function(e){e.preventDefault();applyCatSel(a.dataset.cat||'');});});
   $('searchBtn').addEventListener('click',function(){curPage=1;if(matchMode)exitMatch();render();});
   $('searchInput').addEventListener('keydown',function(e){if(e.key==='Enter'){curPage=1;if(matchMode)exitMatch();render();}});
   fCity.addEventListener('change',function(){curPage=1;if(matchMode)exitMatch();render();});
-  $('fCat').addEventListener('change',function(){var v=$('fCat').value;document.querySelectorAll('.nav-link').forEach(function(x){x.classList.toggle('on',x.dataset.cat===v);});curPage=1;if(matchMode)exitMatch();render();});
+  $('fCat').addEventListener('change',function(){applyCatSel($('fCat').value);});
   $('matchBtn').addEventListener('click',doMatch);
   // ===== 多套画像（脸谱）管理 =====
   var PROFILES_KEY='yzt_profiles_v1', ACTIVE_KEY='yzt_active_profile_v1';
@@ -456,13 +467,15 @@ a{color:inherit;text-decoration:none}
   }
   // 精准匹配模式：主列表=全部匹配岗位，带分数徽章
   function renderMatch(){
-    var total=matchList.length; $('totalCount').textContent=total;
+    var list2 = matchList;
+    if(matchCat){ list2 = matchList.filter(function(x){return x.cat===matchCat;}); }
+    var total=list2.length; $('totalCount').textContent=total;
     var pages=Math.max(1,Math.ceil(total/PAGE_SIZE)); if(curPage>pages)curPage=pages;
-    var slice=matchList.slice((curPage-1)*PAGE_SIZE,curPage*PAGE_SIZE);
+    var slice=list2.slice((curPage-1)*PAGE_SIZE,curPage*PAGE_SIZE);
     var list=$('jobList'); list.innerHTML='';
     var banner=document.createElement('div');
     banner.className='match-banner';
-    banner.innerHTML='🎯 <b>精准匹配模式</b>：为你量身筛选的 '+total+' 个可报岗位<button class="btn-exit" id="btnExitMatch2">✕ 返回全部岗位</button>';
+    banner.innerHTML='🎯 <b>精准匹配模式</b>：'+(matchCat?('「'+catLabel[matchCat]+'」内 '):'')+'为你量身筛选的 '+total+' 个可报岗位<button class="btn-exit" id="btnExitMatch2">✕ 退出匹配</button>';
     list.appendChild(banner);
     slice.forEach(function(p){
       var div=document.createElement('div');div.className='job cat-'+(p&&p.cat||'x');
@@ -492,7 +505,7 @@ a{color:inherit;text-decoration:none}
       if(curPage<totalPg){var bN=document.createElement('button');bN.textContent='›';bN.addEventListener('click',function(){curPage++;renderMatch();});$('pager').appendChild(bN);}
     }
   }
-  function exitMatch(){ matchMode=false; matchList=[]; curPage=1; var box=$('matchResult'); if(box)box.innerHTML='<div class="s-head2">已退出匹配模式</div>'; render(); }
+  function exitMatch(){ matchMode=false; matchList=[]; matchCat=''; curPage=1; var box=$('matchResult'); if(box)box.innerHTML=''; render(); }
   function grade(it){var m=it.a||'';if(/A06(0?104)|古籍|文献学|敦煌|古文字/.test(m))return '强对口';if(/博物馆|纪念馆|考古|文物|文化遗产/.test((it.u||'')+m))return '文博馆方向';if(/历史学\\(A06\\)|历史学类|A06/.test(m))return '历史学大类';return '相近大类';}
   function doMatch(){
     var majorInput=$('majorName').value.trim();
@@ -530,7 +543,7 @@ a{color:inherit;text-decoration:none}
       }
       // 进入精准匹配模式：主列表 = 全部匹配岗位（按分数降序）
       matchList=filtered.slice().sort(function(a,b){return (b.score||0)-(a.score||0);});
-      matchMode=true; curPage=1;
+      matchMode=true; matchCat=''; curPage=1;
       var groups={'强对口':[],'文博馆方向':[],'历史学大类':[],'相近大类':[]};
       filtered.forEach(function(it){var g=it.way==='专业精准对口'?'强对口':grade(it);(groups[g]=groups[g]||[]).push(it);});
       var inner='<div class="s-head2">✅ 共匹配 <b>'+filtered.length+'</b> 个可报岗位 '+hint+(strictOnly?'（严格对口）':'')+'</div>';
