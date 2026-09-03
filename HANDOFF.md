@@ -1275,3 +1275,26 @@ dist 11490KB（20004条），已发布，验证含省委老干部局/省政协/�
 
 ### 发布
 main b678fb1 + gh-pages bb7d5ec → 线上验证 11591KB 含两功能 ✅
+
+---
+
+## 41. 2026-09-04 修复两个前端bug（匹配模式分类+分页）
+
+### Bug 1: 匹配模式点"央国企"没反应/还是事业编
+- 旧行为: matchMode下点导航→exitMatch退出匹配回全库, 用户困惑
+- 新行为: 匹配模式下点分类导航=fCat下拉 → **匹配结果内按cat过滤**（matchCat变量）
+  - 点「央国企」→ banner变「央国企」内 185 个可报岗位
+  - 点「全部」→ exitMatch退出匹配回正常浏览
+- 实现: applyCatSel(v)统一处理nav+fCat; renderMatch内 matchCat过滤; doMatch重置matchCat; exitMatch清空matchResult摘要
+
+### Bug 2: 底部分页按不了(匹配模式)
+- 旧: renderMatch分页循环 var i 无闭包 → 所有按钮共享i → 点击无效
+- 新: 与主列表一致 IIFE闭包 (function(pg){...})(i2) + ‹ ›前后翻页
+- 实测: 匹配185条→9页按钮→点第2页 curOn=2 内容翻页 ✅
+
+### 回归验证(Playwright)
+- 匹配1914条→点央国企→185条(广东省城际轨道交通打头) ✅
+- 匹配内翻页第2页(南方电网) ✅ / 退出匹配回20143 ✅ / 正常模式翻页 ✅
+- 零JS错误
+
+### 提交 5638368 → main + gh-pages 已发布, 线上验证含matchCat/startPg2
