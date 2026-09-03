@@ -485,7 +485,12 @@ a{color:inherit;text-decoration:none}
     var eb=document.getElementById('btnExitMatch2');
     if(eb)eb.addEventListener('click',exitMatch);
     $('pager').innerHTML='';
-    if(pages>1){for(var i=1;i<=Math.min(pages,8);i++){var b=document.createElement('button');b.textContent=i;if(i===curPage)b.className='on';b.addEventListener('click',function(){curPage=i;renderMatch();});$('pager').appendChild(b);}}
+    if(pages>1){
+      var totalPg=Math.min(pages,8),startPg2=Math.max(1,Math.min(curPage-3,totalPg-7));
+      if(curPage>1){var bP=document.createElement('button');bP.textContent='‹';bP.addEventListener('click',function(){curPage--;renderMatch();});$('pager').appendChild(bP);}
+      for(var i2=startPg2;i2<=Math.min(pages,startPg2+7);i2++){(function(pg){var b=document.createElement('button');b.textContent=pg;if(pg===curPage)b.className='on';b.addEventListener('click',function(){curPage=pg;renderMatch();});$('pager').appendChild(b);})(i2);}
+      if(curPage<totalPg){var bN=document.createElement('button');bN.textContent='›';bN.addEventListener('click',function(){curPage++;renderMatch();});$('pager').appendChild(bN);}
+    }
   }
   function exitMatch(){ matchMode=false; matchList=[]; curPage=1; var box=$('matchResult'); if(box)box.innerHTML='<div class="s-head2">已退出匹配模式</div>'; render(); }
   function grade(it){var m=it.a||'';if(/A06(0?104)|古籍|文献学|敦煌|古文字/.test(m))return '强对口';if(/博物馆|纪念馆|考古|文物|文化遗产/.test((it.u||'')+m))return '文博馆方向';if(/历史学\\(A06\\)|历史学类|A06/.test(m))return '历史学大类';return '相近大类';}
