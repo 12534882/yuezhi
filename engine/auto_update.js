@@ -148,6 +148,16 @@ async function verifyUrls(sampleRate = 0.08) {
   run('node', [path.join('engine', 'build_standalone.js')]);
 
   // 3.5) 自动发布到永久网页（GitHub main 备份 + gh-pages 部署 GitHub Pages）
+  // 带代理重试的 push（计划任务运行时 FlClash 可能未就绪 → 等待重试）
+  function pushWithRetry(args, label, tries) {
+    for (let t = 0; t < tries; t++) {
+      const pr = spawnSync('git', args, { cwd: ROOT, stdio: 'inherit', timeout: 90 * 1000 });
+      if (pr.status === 0) { log({ step: 'publish', msg: `${label}已推送` }); return true; }
+      if (t < tries - 1) { log({ step: 'publish', msg: `${label}失败, ${30 * (t + 1)}s后重试(${t + 1}/${tries - 1})`, level: 'warn' }); spawnSync('sleep', t === 0 ? ['30'] : ['60']); }
+    }
+    log({ step: 'publish', msg: `${label}推送失败(已重试${tries}次, 下轮守护会补)`, level: 'warn' });
+    return false;
+  }
   try {
     const stamp = new Date().toLocaleString('zh-CN', { hour12: false });
     spawnSync('git', ['add', 'data/job_db.json', 'dist/index.html'], { cwd: ROOT, stdio: 'inherit' });
@@ -156,11 +166,8 @@ async function verifyUrls(sampleRate = 0.08) {
       log({ step: 'publish', msg: '数据无变化，跳过推送' });
     } else {
       const cm = spawnSync('git', ['commit', '-m', `yuezhi auto: ${stamp}`], { cwd: ROOT, stdio: 'inherit' });
-      if (cm.status === 0) {
-        const pu = spawnSync('git', ['push', 'origin', 'HEAD:main'], { cwd: ROOT, stdio: 'inherit' });
-        if (pu.status === 0) log({ step: 'publish', msg: '已推送 main' });
-        else log({ step: 'publish', msg: 'push main 失败(代理?)', level: 'warn' });
-      } else { log({ step: 'publish', msg: 'commit 失败', level: 'warn' }); }
+      if (cm.status === 0) pushWithRetry(['push', 'origin', 'HEAD:main'], 'main ', 3);
+      else { log({ step: 'publish', msg: 'commit 失败', level: 'warn' }); }
     }
   } catch (e) {
     log({ step: 'publish', msg: `自动发布异常: ${e.message.slice(0, 60)}`, level: 'warn' });

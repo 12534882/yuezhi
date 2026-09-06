@@ -42,8 +42,15 @@ function publish() {
       // 有变化才提交
       const c = run('git', ['commit', '-m', `deploy pages: ${new Date().toLocaleString('zh-CN', { hour12: false })}`]);
       if (!c.ok && !/nothing to commit/.test(c.out)) { console.log('⚠️ commit:', c.out.slice(0, 100)); }
-      const p = run('git', ['push', 'origin', 'gh-pages']);
-      console.log(p.ok ? '✅ 已推送到 gh-pages → Pages 自动更新' : '⚠️ push 失败: ' + p.out.slice(0, 120));
+      // push 带重试（代理可能未就绪）
+      let pushed = false;
+      for (let t = 0; t < 3; t++) {
+        const p = run('git', ['push', 'origin', 'gh-pages']);
+        if (p.ok) { console.log('✅ 已推送到 gh-pages → Pages 自动更新'); pushed = true; break; }
+        console.log(`⚠️ push 失败(${t + 1}/3): ${p.out.slice(0, 100)}`);
+        if (t < 2) { spawnSync('node', ['-e', 'setTimeout(()=>{},30000)'], { cwd: ROOT, timeout: 40000 }); } // 等30s再重试(代理可能刚起)
+      }
+      if (!pushed) return { ok: false }; // 让上层知道没推成功
     } else {
       console.log('  index.html 无变化，跳过');
     }
