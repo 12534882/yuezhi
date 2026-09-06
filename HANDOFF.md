@@ -1298,3 +1298,33 @@ main b678fb1 + gh-pages bb7d5ec → 线上验证 11591KB 含两功能 ✅
 - 零JS错误
 
 ### 提交 5638368 → main + gh-pages 已发布, 线上验证含matchCat/startPg2
+
+---
+
+## 43. 2026-09-06 数据更新机制澄清 + 修复线上停滞4天(push代理bug) ★★
+
+### 用户疑问: "数据怎么更新的? 怎么还是9.5的岗位"
+用户看的桌面单文件(9/5导出快照) ≠ 实时数据。实测: 数据每天08:00/18:00自动采集成功(scheduler.log ✅), 但**线上gh-pages停在9/3** 4天没更新
+
+### 根因(彻底查清)
+- auto_update/publish_pages 每天本地采集+commit都成功, 但 **git push 需要代理 127.0.0.1:7890**
+- **FlClash 不是开机自启** → 计划任务 08:00/18:00 跑时代理未就绪 → push 全部失败被吞
+- update_log: "push main 失败(代理?)" / publish_pages 报"已部署"但实际没推(退出码误导)
+- 证据: FlClash StartTime 18:24(手动开), 计划任务 18:00 跑
+
+### 修复
+1. **FlClash 加开机自启**(注册表Run): 确保代理在计划任务前就绪
+2. **auto_update pushWithRetry**: push失败等30/60s重试3次
+3. **publish_pages push重试+失败返回ok:false**(不再误导上层)
+4. 补推滞留: main 216722d→b096723→176d3f2, gh-pages 666b3a2→5aeb8b3 全部同步
+5. 线上验证: 徽章 2026-09-06 18:05 / 20203岗 ✅
+
+### 数据更新机制(回答用户)
+- 计划任务 YueZhiTong_Daily0800/1800: 每天2次完整采集(collector全源→治理→build→commit→push main+gh-pages)
+- 守护 YueZhiTong_Guard(登录自启): 08:05/18:05兜底
+- **新版入口**: dist/index.html(09-06最新20203) 桌面单文件已刷新
+- 线上 github.io 现=09-06 18:05版(VPN可看)
+
+### 教训
+- git push 依赖代理时, 代理进程必须开机自启, 否则"本地成功线上停滞"
+- publish_pages 曾误报成功(进程退出码0但push失败) → 已修
